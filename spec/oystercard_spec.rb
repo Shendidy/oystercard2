@@ -8,9 +8,12 @@ describe OysterCard do
   end
 
   describe 'setting up the OysterCard' do
-
     it 'should have an initial balance equal to default balance' do
+
+      allow(@card).to receive(:check_balance).and_return(OysterCard::DEFAULT_BALANCE) # to set a value to receive from :check_balance although it currently returns nil
+
       expect(@card.balance).to eq(OysterCard::DEFAULT_BALANCE)
+      expect(@card.check_balance).to eq(OysterCard::DEFAULT_BALANCE) # implementing bahaviour testing rather than state testing
     end
 
     it 'should have a default balance equal to 0' do
@@ -21,11 +24,9 @@ describe OysterCard do
       top_up_amount = 10
       expect { @card.top_up(top_up_amount) }.to change { @card.balance }.by(top_up_amount)
     end
-
   end
 
   describe 'consumer protections' do
-
     it 'should have a maximum balance limit of £90' do
       expect(OysterCard::MAXIMUM_BALANCE).to eq(90)
     end
@@ -34,11 +35,9 @@ describe OysterCard do
       @card.top_up(40)
       expect { @card.top_up(52) }.to raise_error(OysterCard::MAX_BALANCE_ERROR)
     end
-
   end
 
   describe 'touch in/out functionality' do
-
     before(:each) do
       @card.top_up(10)
     end
@@ -49,7 +48,6 @@ describe OysterCard do
     end
 
     it 'should allow the user to tap out' do
-
       @card.touch_in(station)
       @card.touch_out(station)
       expect(@card).not_to be_in_journey
@@ -67,7 +65,6 @@ describe OysterCard do
     it 'should deduct journey fare from balance' do
       expect { @card.touch_out(station) }.to change { @card.balance }.by(-OysterCard::MINIMUM_CHARGE)
     end
-
   end
 
   describe 'Working with station' do
@@ -75,12 +72,25 @@ describe OysterCard do
       @card.top_up(10)
       @card.touch_in(station)
     end
+
     it "Should remember the entry station" do
       expect(@card.entry_station).to eq(station)
     end
+
     it 'Should reset entry station on touch_out' do
       @card.touch_out(station)
       expect(@card.entry_station).to be nil
+    end
+
+
+    it 'Should reset entry station on touch_out' do
+      #@card.touch_out(station)
+      expect {@card.touch_out(station)}.to change{@card.entry_station}.to be_nil
+    end
+
+
+    it 'Should return empty array of journeys at start' do
+      expect(@card.travel_history).to eq []
     end
   end
 
@@ -96,12 +106,7 @@ describe OysterCard do
       @card.touch_in(station3)
       @card.touch_out(station4)
       expected_result = [{in: station1, out: station2}, {in: station3, out: station4}]
-      p @card.travel_history
       expect(@card.travel_history).to eq(expected_result)
     end
-
-
-
   end
-
 end

@@ -16,13 +16,16 @@ class OysterCard
   end
 
   def top_up(amount)
-    raise MAX_BALANCE_ERROR if amount + balance >= MAXIMUM_BALANCE
-
+    raise MAX_BALANCE_ERROR if amount + balance > MAXIMUM_BALANCE
     @balance += amount
   end
 
   def deduct(amount)
     @balance -= amount
+  end
+
+  def check_balance
+    # DEFAULT_BALANCE
   end
 
   def touch_in(station)
@@ -39,7 +42,7 @@ class OysterCard
   end
 
   def in_journey?
-    @entry_station
+    !!@entry_station
   end
 
   private :deduct
